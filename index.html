@@ -6,6 +6,13 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lab 9</title>
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({ 
+      token: "d5e6e25cefbb4c18a9cc38c5b8be191d"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
 
   <style>
     button {
@@ -87,7 +94,26 @@
     </section>
   </main>
 
+  
   <script>
+    class CalculationError extends Error {
+      constructor(message, code) {
+        super(message);
+        this.name = "CalculationError";
+        this.code = code;
+      }
+    }
+    window.onerror = function (message, source, lineno, colno, error) {
+      console.log("A global error was caught!");
+      console.log("Message:", message);
+      console.log("Source:", source);
+      console.log("Line:", lineno, "Column:", colno);
+      console.log("Error object:", error);
+      return false;
+    }
+    document.querySelector('#error-btns > button:last-child').addEventListener('click', () => {
+      nonExistentFunction();
+    });
     let form = document.querySelector('form');
     form.addEventListener('submit', e => {
       e.preventDefault();
@@ -95,13 +121,97 @@
       let firstNum = document.querySelector('#first-num').value;
       let secondNum = document.querySelector('#second-num').value;
       let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+
+      try {
+        const num1 = parseFloat(firstNum);
+        const num2 = parseFloat(secondNum);
+        if (isNaN(num1) || isNaN(num2)) {
+          throw new CalculationError("Invalid input: Please enter valid numbers.", "INVALID_INPUT");
+        }
+        if (operator === '/' && num2 === 0) {
+          throw new CalculationError("Division by zero is not allowed.", "DIVISION_BY_ZERO");
+        }
+        output.textContent = eval(`${num1} ${operator} ${num2}`);
+      } catch (error) {
+        output.textContent = `Error: ${error.message}`;
+        console.error(`${error.name} [${error.code}]: ${error.message}`);
+      } finally {
+        console.log("Calculation attempt.");
+      }
     });
 
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
 
     // Start your code here
     // You may move this JS to another file if you wish
+    const data = {
+      name: 'John Doe',
+      age: 30,
+      city: 'New York'
+    };
+    const tableData = [
+      { name: 'Alice', age: 25, city: 'Los Angeles' },
+      { name: 'Bob', age: 28, city: 'Chicago' },
+      { name: 'Charlie', age: 22, city: 'Miami' }
+    ]
+    const timerLabel = "demo-timer";
+    
+    document.querySelectorAll('#error-btns > button').forEach(btn => {
+      const label = btn.textContent.toLowerCase();
+      if (label === 'trigger a global error') return;
+
+      btn.addEventListener('click', () => {
+        switch (label) {
+          case 'console log':
+            console.log("Console Log", data);
+            break;
+          case 'console error':
+            console.error("Console Error: Something went wrong!", data);
+            break;
+          case 'console count':
+            console.count("Console Count");
+            break;
+          case 'console warn':
+            console.warn("Console Warn: Be Cautious!");
+            break;
+          case 'console assert':
+            console.assert(false, "Console Assert failed: condition was false");
+            break;
+          case 'console clear':
+            console.clear();
+            break;
+          case 'console dir':
+            console.dir(data);
+            break;
+          case 'console dirxml':
+            console.dirxml(document.body);
+            break;
+          case 'console group start':
+            console.group("Console Group Start");
+            console.log("Inside group log 1");
+            console.log("Inside group log 2");
+            break;
+          case 'console group end':
+            console.groupEnd();
+            break;
+          case 'console table':
+            console.table(tableData);
+            break;
+          case 'start timer':
+            console.time(timerLabel);
+            break;
+          case 'end timer':
+            console.timeEnd(timerLabel);
+            break;
+          case 'console trace':
+            function traceFunction() {
+              console.trace("Console Trace");
+            }
+            traceFunction();
+            break;
+        }
+      });
+    });
   </script>
 </body>
 
